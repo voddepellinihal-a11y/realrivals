@@ -59,6 +59,11 @@
 ### Deployment prep status
 - [x] `render.yaml` blueprint validated against Render's Blueprint spec
 - [x] Production-boot simulation passes (`tests/verify_production_boot.py`)
+- [x] Alembic build failure fixed: `DATABASE_URL` is resolved from the environment and normalised
+      (`postgres://` / `postgresql://` / `postgresql+psycopg://` → `postgresql+psycopg2://`), and a
+      `%`-encoded password no longer breaks ConfigParser's interpolation
+- [x] `python -m app.db.check_database` pre-flight runs before the migrations and reports the
+      resolved host/port (password masked) with an actionable cause
 - [x] Git repository initialised on `main`, working tree clean
 - [x] Pushed to https://github.com/voddepellinihal-a11y/realrivals (public repo, branch `main`)
 - [x] `.gitignore` / `.gitattributes` added; no `.env`, `node_modules`, `dist` or bytecode tracked

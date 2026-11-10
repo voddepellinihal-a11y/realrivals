@@ -73,12 +73,14 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _validate_secrets(self):
-        """Fail fast in production rather than running with a known secret."""
-        if not self.DATABASE_URL:
-            raise ValueError(
-                "DATABASE_URL is not set. Copy .env.example to backend/.env and fill it in "
-                "(Render: DATABASE_URL -> sync: false)."
-            )
+        """Fail fast in production rather than running with a known secret.
+
+        ``DATABASE_URL`` is deliberately *not* validated here: tools that only
+        need the configuration (Alembic's URL resolution, tests) must be able
+        to load the settings without a database.  The application itself
+        reports a missing database URL with a clear message in
+        ``app.db.session``.
+        """
         if self.is_production:
             if not self.JWT_SECRET_KEY:
                 raise ValueError(

@@ -22,9 +22,14 @@ services:
     # seconds to wake it up.  Use "1c-2g" for a permanently warm, zero-cold-start
     # service.
     plan: free
-    # Builds the SPA, installs the API dependencies and applies migrations.
-    # `alembic upgrade head` runs from backend/ where alembic.ini lives.
-    buildCommand: "cd frontend && npm install && npm run build && cd ../backend && pip install -r requirements.txt && alembic upgrade head"
+    # Builds the SPA, installs the API dependencies, checks the database
+    # connection and applies the migrations.
+    #   python -m app.db.check_database  -> fails with an actionable message
+    #                                      when DATABASE_URL is wrong or the
+    #                                      host is unreachable
+    #   alembic upgrade head              -> runs from backend/ where
+    #                                      alembic.ini lives
+    buildCommand: "cd frontend && npm install && npm run build && cd ../backend && pip install -r requirements.txt && python -m app.db.check_database && alembic upgrade head"
     startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
     healthCheckPath: /health
     autoDeployTrigger: commit

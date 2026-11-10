@@ -17,9 +17,25 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 BASE = "http://127.0.0.1:8000"
 
+
+def _load_local_env() -> None:
+    """Read backend/.env (git-ignored) so the script works out of the box."""
+    env_file = pathlib.Path(__file__).resolve().parents[1] / ".env"
+    if not env_file.is_file():
+        return
+    for line in env_file.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        os.environ.setdefault(key.strip(), value.strip())
+
+
+_load_local_env()
+
 # Credentials of the two seeded private accounts.  They are read from the
-# environment so a working password never has to live in the repository.
-# Put them in backend/.env (git-ignored) or export them before running.
+# environment (or backend/.env) so a working password never has to live in
+# the repository.
 RIVAL1_EMAIL = os.environ.get("RIVAL1_EMAIL", "rival1@realliferivals.com")
 RIVAL1_PASSWORD = os.environ.get("RIVAL1_PASSWORD", "")
 RIVAL2_EMAIL = os.environ.get("RIVAL2_EMAIL", "rival2@realliferivals.com")

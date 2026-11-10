@@ -152,12 +152,47 @@ Do this before sharing the public URL with anyone.
 | Setting | Value | Why |
 | --- | --- | --- |
 | `runtime` | `python` | The Blueprint key for Python (the older `env: python` form is rejected). |
-| `buildCommand` | build SPA → install deps → `alembic upgrade head` | Migrations run before the new version serves traffic. |
+| `buildCommand` | build SPA → install deps → check DB → `alembic upgrade head` | Migrations run before the new version serves traffic. |
 | `startCommand` | `uvicorn app.main:app --host 0.0.0.0 --port $PORT` | Binds to Render's dynamic port. |
-| `healthCheckPath` | `/health` | Liveness probe. |
+| `healthCheckPath` | `/health` | Liveness probe (does not touch the database, so a DB hiccup never restarts the service). |
 | `plan` | `free` | Change to `1c-2g` for a permanently warm service (free instances idle after ~15 min). |
 | `ENVIRONMENT` | `production` | Turns on the production secret checks. |
 | `FRONTEND_URL` | self-referencing `RENDER_EXTERNAL_URL` | Links in emails point at the deployed site. |
+
+## Troubleshooting a failed deploy
+
+### `alembic upgrade head` exits with status 1
+
+The build runs a pre-flight check first, so the log tells you what is wrong:
+
+```
+Database: postgresql+psycopg2://postgres.xxx:***@aws-0-<region>.pooler.supabase.com:6543/postgres
+TCP:      reachable at aws-0-<region>.pooler.supabase.com:6543
+Query:    SELECT 1 succeeded
+```
+
+| Log says | Cause | Fix |
+| --- | --- | --- |
+| `DATABASE_URL is not set` | The variable was never filled in | Set it in Render's Environment tab |
+| `TCP: FAILED to reach …` | The host is not reachable from Render | Use the **connection pooler** URL (port `6543`), not the direct host (`5432`) — Render's outbound addresses are dynamic and IPv4-only |
+| `Can't load plugin: sqlalchemy.dialects:postgres` | The URL uses `postgres://` | Already handled — the URL is normalised automatically |
+| `No module named 'psycopg'` | The URL uses `postgresql://` without a driver | Already handled — normalised to `postgresql+psycopg2://` |
+| `invalid interpolation syntax` | The password contains `%` | Already handled — the URL is escaped for ConfigParser |
+| `Query: FAILED` | Wrong password / database / role | URL-encode `@` as `%40` and `$` as `%24` |
+
+Run the same check locally:
+
+```bash
+cd backend
+python -m app.db.check_database
+```
+
+### The app starts but the page is blank
+
+`GET /health` returns `{"status":"ok"}` and `/health/ready` returns
+`{"status":"ready","database":"connected"}`. If the SPA is missing, the build
+did not produce `frontend/dist` — check the build log for the `npm run build`
+step.
 
 ## Environment variables
 
