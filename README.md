@@ -92,6 +92,8 @@ cd backend
 python -m pytest -q                              # unit + API tests
 python tests/verify_master_task.py               # end-to-end flow against a running server
 python tests/verify_production_boot.py           # simulates the Render production boot
+python tests/verify_public_startup.py <url>      # smoke-test a deployed instance
+python tests/verify_login.py <url> <email> <pw>  # log in and load the dashboard
 ```
 
 `verify_master_task.py` needs the two seeded account passwords. Put them in
@@ -185,6 +187,14 @@ Run the same check locally:
 ```bash
 cd backend
 python -m app.db.check_database
+```
+
+### Verify a deployed instance
+
+```bash
+cd backend
+python tests/verify_public_startup.py https://real-life-rivals.onrender.com
+python tests/verify_login.py https://real-life-rivals.onrender.com rival1@realliferivals.com <password>
 ```
 
 ### The app starts but the page is blank
