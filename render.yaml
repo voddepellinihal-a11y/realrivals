@@ -36,6 +36,13 @@ services:
       - key: JWT_SECRET_KEY
         # Render generates a strong random secret for you.
         generateValue: true
+      - key: RIVAL1_PASSWORD
+        # Password for the seeded rival1 account.  Render generates one — read
+        # it from the service's Environment tab to log in.
+        generateValue: true
+      - key: RIVAL2_PASSWORD
+        # Password for the seeded rival2 account.
+        generateValue: true
       - key: ENVIRONMENT
         value: production
       - key: FRONTEND_URL

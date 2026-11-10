@@ -17,12 +17,20 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 BASE = "http://127.0.0.1:8000"
 
-# Credentials of the two seeded private accounts.  Override with environment
-# variables so real passwords never have to live in the repository.
+# Credentials of the two seeded private accounts.  They are read from the
+# environment so a working password never has to live in the repository.
+# Put them in backend/.env (git-ignored) or export them before running.
 RIVAL1_EMAIL = os.environ.get("RIVAL1_EMAIL", "rival1@realliferivals.com")
-RIVAL1_PASSWORD = os.environ.get("RIVAL1_PASSWORD", "Nihal@2007")
+RIVAL1_PASSWORD = os.environ.get("RIVAL1_PASSWORD", "")
 RIVAL2_EMAIL = os.environ.get("RIVAL2_EMAIL", "rival2@realliferivals.com")
-RIVAL2_PASSWORD = os.environ.get("RIVAL2_PASSWORD", "Rival2#2027!")
+RIVAL2_PASSWORD = os.environ.get("RIVAL2_PASSWORD", "")
+
+if not (RIVAL1_PASSWORD and RIVAL2_PASSWORD):
+    print(
+        "Set RIVAL1_PASSWORD and RIVAL2_PASSWORD before running this script.\n"
+        "Add them to backend/.env (git-ignored) or export them first."
+    )
+    raise SystemExit(1)
 
 # 1x1 transparent PNG
 PNG_B64 = (
