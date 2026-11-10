@@ -59,13 +59,16 @@
 ### Deployment prep status
 - [x] `render.yaml` blueprint validated against Render's Blueprint spec
 - [x] Production-boot simulation passes (`tests/verify_production_boot.py`)
-- [x] Git repository initialised on `main`, working tree clean, one reviewed commit
+- [x] Git repository initialised on `main`, working tree clean
+- [x] Pushed to https://github.com/voddepellinihal-a11y/realrivals (public repo, branch `main`)
 - [x] `.gitignore` / `.gitattributes` added; no `.env`, `node_modules`, `dist` or bytecode tracked
 - [x] Supabase credentials scrubbed from every committed file (only `backend/.env`, which is ignored,
       still holds them locally)
-- [ ] Push to GitHub and connect the repo in Render → public URL
-- [ ] Set the SMTP env vars so verification / reset emails are delivered
-- [ ] Rotate the seeded account passwords if the instance becomes reachable by strangers
+- [x] Seeded account passwords moved out of the source (`RIVAL1_PASSWORD` / `RIVAL2_PASSWORD`,
+      required in production) + `python -m app.db.rotate_seeded_passwords` for existing databases
+- [ ] Render: create the Blueprint from the repo and set `DATABASE_URL` + the SMTP vars
+- [ ] Run `python -m app.db.rotate_seeded_passwords` once with the same values set on Render
+- [ ] Read the generated `RIVAL1_PASSWORD` / `RIVAL2_PASSWORD` from Render's Environment tab to log in
 
 ### Checkpoint: MVP Complete
 - [ ] All MVP acceptance criteria met (PRD §11)
