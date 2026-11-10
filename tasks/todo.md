@@ -56,6 +56,17 @@
   - [ ] SMTP credentials configured so verification / password-reset emails are delivered
   - [ ] Public deployment executed (Render account / repo push required)
 
+### Deployment prep status
+- [x] `render.yaml` blueprint validated against Render's Blueprint spec
+- [x] Production-boot simulation passes (`tests/verify_production_boot.py`)
+- [x] Git repository initialised on `main`, working tree clean, one reviewed commit
+- [x] `.gitignore` / `.gitattributes` added; no `.env`, `node_modules`, `dist` or bytecode tracked
+- [x] Supabase credentials scrubbed from every committed file (only `backend/.env`, which is ignored,
+      still holds them locally)
+- [ ] Push to GitHub and connect the repo in Render → public URL
+- [ ] Set the SMTP env vars so verification / reset emails are delivered
+- [ ] Rotate the seeded account passwords if the instance becomes reachable by strangers
+
 ### Checkpoint: MVP Complete
 - [ ] All MVP acceptance criteria met (PRD §11)
 - [x] All tests pass; builds clean
