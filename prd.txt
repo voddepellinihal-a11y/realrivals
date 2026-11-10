@@ -1,0 +1,41 @@
+══════════════════════════════════════════════════════════════════════
+
+Q: My OS exam is on 2026-12-10 and I've attended 30 of 40 OS classes. How many days do I have, can I skip any classes, and how many hours a day should I study if I need 60 hours in total?
+
+── the agent's plan ──
+1. Use **days_until** to calculate the number of days remaining until the exam date (2026-12-10).  
+2. Use **attendance_calculator** to determine how many more classes you can miss based on the requirement to attend a certain percentage of the 40 total classes.  
+3. Use **calculator** to compute the required daily study hours by dividing the remaining study hours (60) by the number of days left (from step 1) after accounting for any days you plan to skip.
+
+── following the plan ──
+   🔧 the AI chose: days_until({"date":"2026-12-10"})
+   📥 result: 44 day(s) from today (27 Oct 2026) until Thursday 10 Dec 2026.
+   🔧 the AI chose: attendance_calculator({"attended":30,"held":40,"required":75})
+   📥 result: Attendance 75.0%. You can skip 0 more class(es) and stay at or above 75%.
+   🔧 the AI chose: calculator({"expression":"60/44"})
+   📥 result: 1.36
+
+── first answer ──
+- Days until the exam: **44 days**.  
+- Attendance: You’ve already met the 75 % requirement (30/40 = 75 %). You **cannot miss any more classes** without falling below 75 %.  
+- Study time: 60 hours ÷ 44 days ≈ **1.36 hours per day**.  
+
+── self-check ──
+
+AI (planned and checked) › **Question parts and tool verification**
+
+| Part of the question | Tool used | Result | Covered? |
+|----------------------|-----------|--------|----------|
+| How many days until the exam (2026‑12‑10)? | `days_until` | 44 days | ✅ |
+| Can I skip any more classes (30 attended of 40, required 75 %)? | `attendance_calculator` | Attendance = 75 %; you can skip **0** more classes | ✅ |
+| How many study hours per day to reach 60 h total? | `calculator` (60 ÷ 44) | 1.36 hours/day | ✅ |
+
+All three requested calculations have been performed with the appropriate tools.
+
+**Complete answer**
+
+- **Days left until the exam:** **44 days**.  
+- **Attendance:** You have met the 75 % requirement (30/40 = 75 %). You **cannot miss any additional classes** without dropping below the required percentage.  
+- **Daily study time:** To reach 60 hours of study, you need to study about **1.36 hours per day** (60 ÷ 44).
+
+👀 Check: Did the agent follow its own plan? Compare its trace with Level 

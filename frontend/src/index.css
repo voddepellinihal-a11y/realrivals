@@ -1,0 +1,57 @@
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+/* ------------------------------------------------------------------ */
+/* Brand palette                                                       */
+/*   Background      Deep Charcoal / Slate   #18181B                  */
+/*   Cards           Midnight Navy            #0F172A                  */
+/*   Borders         Flat, no glow            #1E293B                  */
+/*   XP + accents    Vivid Amber / Yellow     #F59E0B  &  #FFFFFF      */
+/*   Actions         Deep Slate Blue          #3B82F6                  */
+/* ------------------------------------------------------------------ */
+@theme {
+  --color-brand-base: #18181b;
+  --color-brand-surface: #0f172a;
+  --color-brand-edge: #1e293b;
+  --color-brand-edge-strong: #334155;
+  --color-brand-accent: #f59e0b;
+  --color-brand-accent-soft: #fbbf24;
+  --color-brand-accent-dim: #b45309;
+  --color-brand-action: #3b82f6;
+  --color-brand-action-dark: #2563eb;
+  --color-brand-action-soft: #1d4ed8;
+
+  --shadow-flat: 0 1px 2px 0 rgb(0 0 0 / 0.35);
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html,
+  body,
+  #root {
+    min-height: 100%;
+    background-color: #18181b;
+    color: #e2e8f0;
+  }
+
+  body {
+    margin: 0;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+      "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background-color: rgba(59, 130, 246, 0.4);
+  }
+
+  /* Flat scrollbars to match the flat, glow-free look */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #334155 transparent;
+  }
+}

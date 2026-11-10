@@ -1,0 +1,58 @@
+# Real-Life Rivals — Render Blueprint (single service: FastAPI API + built SPA)
+#
+# Deploy with:  New -> Blueprint  (point it at this repo), or `render blueprint launch`.
+#
+# The service builds the React app and serves it from FastAPI, so the API and the
+# SPA share one origin and cookie auth works without any CORS configuration.
+#
+# Required before the first deploy:
+#   DATABASE_URL  -> your Supabase *connection pooler* URL (port 6543):
+#                   postgresql+psycopg2://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:6543/postgres?sslmode=require
+#                   (the direct host on port 5432 is not reachable from Render's network)
+#   SMTP_*       -> optional, but without them verification / reset emails are not delivered
+
+services:
+  - type: web
+    name: real-life-rivals
+    # NOTE: the Blueprint key for a Python service is `runtime` — the `env` key
+    # is deprecated and would be rejected by the Blueprint validator.
+    runtime: python
+    # "free" (0.1 CPU / 512 MB) is always publicly reachable, but Render idles
+    # it after ~15 minutes of inactivity and the next request takes a few
+    # seconds to wake it up.  Use "1c-2g" for a permanently warm, zero-cold-start
+    # service.
+    plan: free
+    # Builds the SPA, installs the API dependencies and applies migrations.
+    # `alembic upgrade head` runs from backend/ where alembic.ini lives.
+    buildCommand: "cd frontend && npm install && npm run build && cd ../backend && pip install -r requirements.txt && alembic upgrade head"
+    startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12"
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET_KEY
+        # Render generates a strong random secret for you.
+        generateValue: true
+      - key: ENVIRONMENT
+        value: production
+      - key: FRONTEND_URL
+        # The public URL of this service, used to build links in emails.
+        fromService:
+          name: real-life-rivals
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_USERNAME
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM_EMAIL
+        sync: false

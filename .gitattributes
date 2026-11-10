@@ -1,0 +1,16 @@
+# Normalise line endings so the repo is identical on every platform.
+* text=auto eol=lf
+
+# Windows-only scripts
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files that must never be line-ending converted
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.pyc binary
