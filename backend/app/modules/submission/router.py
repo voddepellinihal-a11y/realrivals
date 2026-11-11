@@ -15,7 +15,6 @@ from app.models.submission import Submission
 from app.models.user import User
 from app.models.verification_review import VerificationReview
 from app.models.xp_transaction import XpTransaction
-from app.models.streak import Streak
 
 router = APIRouter(prefix="/submissions", tags=["submissions"])
 
@@ -303,31 +302,11 @@ def review_submission(submission_id: str, payload: dict, user=Depends(get_curren
             assignment.status = "completed"
             assignment.completed_at = datetime.now(timezone.utc)
 
-            streak = db.execute(
-                select(Streak).where(Streak.user_id == submission.user_id, Streak.group_id == assignment.group_id)
-            ).scalar_one_or_none()
-            today = datetime.now(timezone.utc).date()
-            if streak is None:
-                streak = Streak(
-                    id=uuid.uuid4(),
-                    user_id=submission.user_id,
-                    group_id=assignment.group_id,
-                    current_count=1,
-                    longest_count=1,
-                    last_qualified_date=today,
-                    updated_at=datetime.now(timezone.utc),
-                )
-                db.add(streak)
-            else:
-                from datetime import timedelta
-                if streak.last_qualified_date == today - timedelta(days=1):
-                    streak.current_count += 1
-                    if streak.current_count > streak.longest_streak:
-                        streak.longest_streak = streak.current_count
-                elif streak.last_qualified_date != today:
-                    streak.current_count = 1
-                streak.last_qualified_date = today
-                streak.updated_at = datetime.now(timezone.utc)
+            # Group-scoped streak row.  The logic lives in streak_service so it
+            # uses the model's real field names (current_count / longest_count).
+            from app.modules.game.services.streak_service import apply_streak_record
+
+            apply_streak_record(db, submission.user_id, assignment.group_id)
 
     db.commit()
     return {

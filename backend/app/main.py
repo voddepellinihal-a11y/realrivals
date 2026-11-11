@@ -10,6 +10,7 @@ from sqlalchemy import text
 from app.core.config import settings
 from app.db.session import get_db, engine
 from app.db.seed_private_users import seed_private_users
+from app.db.url import describe_database_url
 from app.modules.auth.router import router as auth_router
 from app.modules.auth.router import user_router
 from app.modules.challenge.router import router as challenge_router
@@ -103,6 +104,16 @@ class SPAStaticFiles(StaticFiles):
 
 @app.on_event("startup")
 def startup_event():
+    # A short banner so the Render / container logs show the state of the
+    # deployment at a glance.
+    print("-" * 68)
+    print(f"Real-Life Rivals - {settings.APP_NAME}")
+    print(f"  environment : {settings.ENVIRONMENT} ({settings.APP_ENV})")
+    print(f"  database    : {describe_database_url(settings.DATABASE_URL)}")
+    print(f"  frontend    : {settings.frontend_url}")
+    print(f"  spa bundle  : {'frontend/dist (mounted)' if frontend_dist.is_dir() else 'MISSING — build the frontend'}")
+    print("-" * 68)
+
     # Seed private users on startup
     try:
         seed_private_users()

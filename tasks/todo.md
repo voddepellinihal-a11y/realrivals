@@ -64,6 +64,10 @@
       `%`-encoded password no longer breaks ConfigParser's interpolation
 - [x] `python -m app.db.check_database` pre-flight runs before the migrations and reports the
       resolved host/port (password masked) with an actionable cause
+- [x] Proof review crash fixed: the group-streak update read `streak.longest_streak`, but the model
+      defines `longest_count`, so approving a proof on a consecutive day returned a 500. The logic now
+      lives in `streak_service.apply_streak_record` and is covered by tests.
+- [x] Startup banner logs the environment, the database host and whether the SPA bundle is mounted
 - [x] Git repository initialised on `main`, working tree clean
 - [x] Pushed to https://github.com/voddepellinihal-a11y/realrivals (public repo, branch `main`)
 - [x] `.gitignore` / `.gitattributes` added; no `.env`, `node_modules`, `dist` or bytecode tracked
