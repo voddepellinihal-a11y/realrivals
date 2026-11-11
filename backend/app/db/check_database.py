@@ -7,30 +7,60 @@ Run this before the migrations during a build so a misconfigured
 
 It reports the resolved driver/host/port (password masked), whether the host
 is reachable, and whether the database answers a trivial query.
+
+The check is never skipped: if the URL is unusable the script exits non-zero
+so the build stops.  A host that was wrapped in square brackets is reported
+as a configuration error *and* repaired, because the intended host is
+unambiguous — the deployment can proceed while the operator fixes the
+variable at the source.
 """
 
 import socket
 import sys
-from urllib.parse import urlsplit
 
 from app.core.config import settings
-from app.db.url import describe_database_url, missing_database_url_message, normalize_database_url
-
-
-def _host_port(url: str):
-    parts = urlsplit(url)
-    host = parts.hostname or ""
-    port = parts.port or 5432
-    return host, port
+from app.db.url import (
+    database_url_problems,
+    describe_database_url,
+    host_port,
+    missing_database_url_message,
+    normalize_database_url,
+)
 
 
 def check() -> int:
-    url = normalize_database_url(settings.DATABASE_URL or "")
+    raw = settings.DATABASE_URL or ""
+    if not raw.strip():
+        print(missing_database_url_message(), file=sys.stderr)
+        return 1
+
+    # Report configuration problems (driver, brackets, malformed URL) before
+    # attempting anything.  Nothing here is fatal on its own: the URL is
+    # normalised and the connection is still attempted.
+    problems = database_url_problems(raw)
+    if problems:
+        print("DATABASE_URL configuration problem:", file=sys.stderr)
+        for problem in problems:
+            for line in problem.splitlines():
+                print(f"  {line}", file=sys.stderr)
+        print(
+            "  The value was normalised so the connection can still be tried; "
+            "fix the environment variable to remove the warning.",
+            file=sys.stderr,
+        )
+
+    url = normalize_database_url(raw)
     if not url:
         print(missing_database_url_message(), file=sys.stderr)
         return 1
 
-    host, port = _host_port(url)
+    try:
+        host, port = host_port(url)
+    except ValueError as exc:
+        print(f"DATABASE_URL is unusable:\n  {exc}", file=sys.stderr)
+        return 1
+
+    # Never print the URL itself - describe_database_url masks the password.
     print(f"Database: {describe_database_url(url)}")
 
     if not host:
