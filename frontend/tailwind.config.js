@@ -2,6 +2,11 @@
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
+    // Flat design: every box shadow utility is disabled.  Depth comes from
+    // borders and surface contrast, never from a glow.
+    boxShadow: {
+      DEFAULT: "none",
+    },
     extend: {
       colors: {
         brand: {
@@ -21,10 +26,6 @@ export default {
           "action-dark": "#2563EB",
           "action-soft": "#1D4ED8",
         },
-      },
-      boxShadow: {
-        // Flat design — depth comes from borders, not glow.
-        flat: "0 1px 2px 0 rgb(0 0 0 / 0.35)",
       },
     },
   },

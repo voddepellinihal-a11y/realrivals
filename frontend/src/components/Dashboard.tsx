@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import VersusCard from "./VersusCard";
 import ProofPreviewModal from "./ProofPreviewModal";
+import BiometricsCard from "./BiometricsCard";
 
 type Routine = {
   id?: string;
@@ -639,31 +640,34 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
         <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => setShowRoutineModal(true)}
-            className="flex items-center gap-2 rounded-xl border border-brand-action bg-brand-action px-5 py-3 font-bold text-white transition hover:bg-brand-action-dark"
+            className="flex items-center gap-2 whitespace-nowrap rounded-lg border border-brand-action/30 bg-brand-action px-5 py-3 font-medium text-sm text-white transition hover:bg-brand-action-dark"
           >
-            <span className="text-xl">+</span> Add Routine
+            <span aria-hidden="true" className="w-4 text-center leading-none">+</span>
+            Add Routine
           </button>
           <button
             onClick={() => setShowChallengeModal(true)}
-            className="flex items-center gap-2 rounded-xl border border-brand-action bg-brand-action px-5 py-3 font-bold text-white transition hover:bg-brand-action-dark"
+            className="flex items-center gap-2 whitespace-nowrap rounded-lg border border-brand-action/30 bg-brand-action px-5 py-3 font-medium text-sm text-white transition hover:bg-brand-action-dark"
           >
-            <span className="text-xl">+</span> Create Challenge
+            <span aria-hidden="true" className="w-4 text-center leading-none">+</span>
+            Create Challenge
           </button>
           <button
             onClick={() => setShowRivalModal(true)}
-            className="flex items-center gap-2 rounded-xl border border-brand-action-soft bg-brand-action-soft px-5 py-3 font-extrabold text-white transition hover:bg-brand-action"
+            className="flex items-center gap-2 whitespace-nowrap rounded-lg border border-brand-action/30 bg-brand-action px-5 py-3 font-medium text-sm text-white transition hover:bg-brand-action-dark"
           >
-            <span className="text-xl">⚔️</span> Challenge a Rival
+            <span aria-hidden="true" className="w-4 text-center leading-none">⚔️</span>
+            Challenge a Rival
           </button>
         </div>
 
         {error && (
-          <div className="mt-4 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+          <div className="mt-4 border-l-4 border-red-500 bg-brand-surface/80 px-4 py-3 text-sm text-red-300">
             {error}
           </div>
         )}
         {message && (
-          <div className="mt-4 rounded-lg border border-brand-accent bg-brand-accent/10 px-4 py-3 text-sm font-semibold text-brand-accent">
+          <div className="mt-4 border-l-4 border-brand-accent bg-brand-surface/80 px-4 py-3 text-sm font-medium text-brand-accent">
             {message}
           </div>
         )}
@@ -671,79 +675,22 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
 
       {/* Personal Biometrics */}
       <div className="mx-auto max-w-7xl px-6">
-        <div className="rounded-2xl border border-brand-edge bg-brand-surface p-5">
-          <h2 className="text-lg font-bold text-white">Personal Biometrics</h2>
-          <p className="text-[10px] uppercase tracking-widest text-slate-500">Height · Weight · Target · BMI (live)</p>
-          <p className="mt-2 text-xs text-slate-400">
-            {heightCm !== null && weightKg !== null && targetWeightKg !== null ? (
-              <>
-                Currently <span className="font-bold text-white">{weightKg} kg</span> at{" "}
-                <span className="font-bold text-white">{heightCm} cm</span> — target{" "}
-                <span className="font-bold text-brand-accent">{targetWeightKg} kg</span>
-                {weightDelta !== null && weightDelta !== 0 && (
-                  <span className="text-slate-500">
-                    {" "}({weightDelta > 0 ? `${weightDelta} kg to gain` : `${Math.abs(weightDelta)} kg to lose`})
-                  </span>
-                )}
-              </>
-            ) : (
-              "Add your height, weight, and target to see your BMI and goal instantly."
-            )}
-          </p>
-          <form onSubmit={handleSaveBiometrics} className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <label className="text-[10px] uppercase text-slate-500">Height (cm)</label>
-              <input
-                type="number"
-                min={0}
-                value={height}
-                onChange={(e) => setHeight(e.target.value)}
-                placeholder="175"
-                className="mt-1 w-full rounded-lg border border-brand-edge bg-brand-base px-3 py-2 text-white placeholder-slate-600 focus:border-brand-accent focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="text-[10px] uppercase text-slate-500">Weight (kg)</label>
-              <input
-                type="number"
-                min={0}
-                value={weight}
-                onChange={(e) => setWeight(e.target.value)}
-                placeholder="72"
-                className="mt-1 w-full rounded-lg border border-brand-edge bg-brand-base px-3 py-2 text-white placeholder-slate-600 focus:border-brand-accent focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="text-[10px] uppercase text-slate-500">Target (kg)</label>
-              <input
-                type="number"
-                min={0}
-                value={targetWeight}
-                onChange={(e) => setTargetWeight(e.target.value)}
-                placeholder="70"
-                className="mt-1 w-full rounded-lg border border-brand-edge bg-brand-base px-3 py-2 text-white placeholder-slate-600 focus:border-brand-accent focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="text-[10px] uppercase text-slate-500">BMI</label>
-              <div className="mt-1 flex items-center justify-between rounded-lg border border-brand-accent bg-brand-base px-3 py-2">
-                <span className="text-xl font-extrabold text-brand-accent">{bmi ?? "—"}</span>
-                <span className="rounded-full bg-brand-accent/15 px-2 py-1 text-[10px] font-bold uppercase text-brand-accent">
-                  {bmiBadge}
-                </span>
-              </div>
-            </div>
-            <div className="sm:col-span-2 lg:col-span-4">
-              <button
-                type="submit"
-                disabled={biometricsBusy}
-                className="rounded-lg bg-brand-action px-5 py-2 font-bold text-white transition hover:bg-brand-action-dark disabled:opacity-60"
-              >
-                {biometricsBusy ? "Saving…" : "Save Biometrics"}
-              </button>
-            </div>
-          </form>
-        </div>
+        <BiometricsCard
+          height={height}
+          weight={weight}
+          targetWeight={targetWeight}
+          onHeightChange={setHeight}
+          onWeightChange={setWeight}
+          onTargetWeightChange={setTargetWeight}
+          onSubmit={handleSaveBiometrics}
+          busy={biometricsBusy}
+          bmi={bmi}
+          bmiBadge={bmiBadge}
+          heightCm={heightCm}
+          weightKg={weightKg}
+          targetWeightKg={targetWeightKg}
+          weightDelta={weightDelta}
+        />
       </div>
 
       {/* Two-Column Hub */}
