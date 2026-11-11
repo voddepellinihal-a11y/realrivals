@@ -26,6 +26,9 @@ REFRESH_TOKEN_EXPIRE_DAYS = 7
 # in Settings is development-only.
 JWT_SECRET_KEY = settings.JWT_SECRET_KEY
 JWT_ALGORITHM = settings.JWT_ALGORITHM
+# Auth cookies are HTTPS-only in production (Render serves HTTPS); local
+# development runs over plain HTTP, where a Secure cookie is never sent.
+COOKIE_SECURE = settings.is_production
 
 
 def _create_access_token(user_id: uuid.UUID) -> str:
@@ -48,7 +51,7 @@ def _set_auth_cookies(response: Response, access_token: str, refresh_token: str,
         "access_token",
         access_token,
         httponly=True,
-        secure=False,
+        secure=COOKIE_SECURE,
         samesite="lax",
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         path="/",
@@ -57,7 +60,7 @@ def _set_auth_cookies(response: Response, access_token: str, refresh_token: str,
         "refresh_token",
         refresh_token,
         httponly=True,
-        secure=False,
+        secure=COOKIE_SECURE,
         samesite="lax",
         max_age=int((refresh_token_expires_at - datetime.now(timezone.utc)).total_seconds()),
         path="/",
@@ -121,7 +124,7 @@ def login(payload: schemas.LoginRequest, response: Response, db: Session = Depen
         "access_token",
         access_token,
         httponly=True,
-        secure=False,
+        secure=COOKIE_SECURE,
         samesite="lax",
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         path="/",
@@ -130,7 +133,7 @@ def login(payload: schemas.LoginRequest, response: Response, db: Session = Depen
         "refresh_token",
         security.generate_token(),
         httponly=True,
-        secure=False,
+        secure=COOKIE_SECURE,
         samesite="lax",
         max_age=int((session.expires_at - datetime.now(timezone.utc)).total_seconds()),
         path="/",
@@ -188,7 +191,7 @@ def refresh(response: Response, refresh_token: str | None = Cookie(default=None)
         "access_token",
         access_token,
         httponly=True,
-        secure=False,
+        secure=COOKIE_SECURE,
         samesite="lax",
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         path="/",
@@ -197,7 +200,7 @@ def refresh(response: Response, refresh_token: str | None = Cookie(default=None)
         "refresh_token",
         security.generate_token(),
         httponly=True,
-        secure=False,
+        secure=COOKIE_SECURE,
         samesite="lax",
         max_age=int((new_session.expires_at - datetime.now(timezone.utc)).total_seconds()),
         path="/",

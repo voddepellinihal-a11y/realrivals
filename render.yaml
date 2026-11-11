@@ -3,13 +3,20 @@
 # Deploy with:  New -> Blueprint  (point it at this repo), or `render blueprint launch`.
 #
 # The service builds the React app and serves it from FastAPI, so the API and the
-# SPA share one origin and cookie auth works without any CORS configuration.
+# SPA share one origin: cookie auth works without any CORS configuration and
+# the frontend needs no API URL — it calls the origin that served it.
 #
 # Required before the first deploy:
 #   DATABASE_URL  -> your Supabase *connection pooler* URL (port 6543):
 #                   postgresql+psycopg2://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:6543/postgres?sslmode=require
 #                   (the direct host on port 5432 is not reachable from Render's network)
 #   SMTP_*       -> optional, but without them verification / reset emails are not delivered
+#
+# Free plan behaviour (no paid resources, no keep-alive tricks):
+#   The service is always deployed and publicly reachable at its URL.  After
+#   ~15 minutes without traffic Render puts it to sleep; the next request
+#   wakes it, which can take up to a minute.  Nothing is scheduled or polled
+#   to prevent that — the sleep is simply how the free tier works.
 
 services:
   - type: web
@@ -17,10 +24,7 @@ services:
     # NOTE: the Blueprint key for a Python service is `runtime` — the `env` key
     # is deprecated and would be rejected by the Blueprint validator.
     runtime: python
-    # "free" (0.1 CPU / 512 MB) is always publicly reachable, but Render idles
-    # it after ~15 minutes of inactivity and the next request takes a few
-    # seconds to wake it up.  Use "1c-2g" for a permanently warm, zero-cold-start
-    # service.
+    # Free plan: 0.1 CPU / 512 MB, always publicly reachable, sleeps when idle.
     plan: free
     # Builds the SPA, installs the API dependencies, checks the database
     # connection and applies the migrations.
@@ -30,7 +34,10 @@ services:
     #   alembic upgrade head              -> runs from backend/ where
     #                                      alembic.ini lives
     buildCommand: "cd frontend && npm install && npm run build && cd ../backend && pip install -r requirements.txt && python -m app.db.check_database && alembic upgrade head"
+    # Binds to Render's assigned port on every interface.
     startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    # Liveness probe.  It does not touch the database, so a momentary database
+    # hiccup never restarts the service.
     healthCheckPath: /health
     autoDeployTrigger: commit
     envVars:
@@ -57,6 +64,10 @@ services:
           type: web
           envVarKey: RENDER_EXTERNAL_URL
       - key: CORS_ORIGINS
+        # The SPA and the API share one origin, so CORS is not strictly needed.
+        # "*" also covers a separate frontend host or a custom domain later.
+        # The auth cookies are SameSite=Lax, so they are not attached to
+        # cross-site requests.
         value: "*"
       - key: SMTP_HOST
         sync: false

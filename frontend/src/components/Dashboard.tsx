@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import VersusCard from "./VersusCard";
 import ProofPreviewModal from "./ProofPreviewModal";
 import BiometricsCard from "./BiometricsCard";
+import LeaderboardCard, { type LeaderboardEntry } from "./LeaderboardCard";
 
 type Routine = {
   id?: string;
@@ -45,6 +46,7 @@ interface VersusChallenge {
 }
 
 interface ProfileData {
+  id?: string;
   username?: string;
   level?: number;
   lifetime_xp?: number;
@@ -78,6 +80,8 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
   const [routines, setRoutines] = useState<Routine[]>([]);
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [versusChallenges, setVersusChallenges] = useState<VersusChallenge[]>([]);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(true);
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [showRoutineModal, setShowRoutineModal] = useState(false);
   const [showChallengeModal, setShowChallengeModal] = useState(false);
@@ -220,6 +224,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
         setRoutines(Array.isArray(routinesData) ? routinesData : []);
         setChallenges(Array.isArray(challengesData) ? challengesData : []);
         setVersusChallenges(Array.isArray(versusData) ? versusData : []);
+        await refreshLeaderboard();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load data");
       }
@@ -292,6 +297,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
         setMessage("Routine marked as not done.");
       }
       await refreshProfile();
+      await refreshLeaderboard();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update routine");
     } finally {
@@ -387,6 +393,19 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
     ]);
     setChallenges(Array.isArray(challengesData) ? challengesData : []);
     setVersusChallenges(Array.isArray(versusData) ? versusData : []);
+  };
+
+  /** Reload the standings. */
+  const refreshLeaderboard = async () => {
+    setLeaderboardLoading(true);
+    try {
+      const data = await api("/game/leaderboard?scope=lifetime&limit=10");
+      setLeaderboard(Array.isArray(data) ? data : []);
+    } catch {
+      setLeaderboard([]);
+    } finally {
+      setLeaderboardLoading(false);
+    }
   };
 
   const handleCreateChallenge = async (e: FormEvent) => {
@@ -850,6 +869,15 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
         </div>
       </div>
 
+      {/* Leaderboard */}
+      <div className="mx-auto max-w-7xl px-6 pb-12">
+        <LeaderboardCard
+          entries={leaderboard}
+          currentUserId={profile?.id ?? null}
+          loading={leaderboardLoading}
+        />
+      </div>
+
       {/* Add Routine Modal */}
       {showRoutineModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
@@ -1258,6 +1286,7 @@ export default function Dashboard({ onNavigate }: DashboardProps) {
             setMessage("Proof reviewed!");
             refreshChallenges();
             refreshProfile();
+            refreshLeaderboard();
           }}
         />
       )}

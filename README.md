@@ -92,6 +92,7 @@ cd backend
 python -m pytest -q                              # unit + API tests
 python tests/verify_master_task.py               # end-to-end flow against a running server
 python tests/verify_production_boot.py           # simulates the Render production boot
+python tests/verify_render_runtime.py            # exercises a production-mode instance
 python tests/verify_public_startup.py <url>      # smoke-test a deployed instance
 python tests/verify_login.py <url> <email> <pw>  # log in and load the dashboard
 ```
@@ -148,6 +149,45 @@ python -m app.db.rotate_seeded_passwords
 ```
 
 Do this before sharing the public URL with anyone.
+
+## Free plan behaviour
+
+The service runs on the **Free** web-service plan — no paid resources, no
+extra services:
+
+* **Always deployed.** The site is continuously reachable at its `.onrender.com`
+  URL, independent of your machine. Your laptop can be switched off.
+* **It sleeps when idle.** After roughly 15 minutes without incoming traffic
+  Render puts the instance to sleep to save resources. The first request after
+  that wakes it, and **can take up to about a minute** to respond.
+* **No keep-alive.** Nothing in this repository pings the service to prevent
+  the sleep — that would be working around the free tier rather than
+  designing for it. The sleep is simply how the free tier works.
+* **Cold starts are harmless.** All state lives in Postgres, so a waking
+  instance comes straight back up with the same data and sessions intact.
+* **0.1 CPU / 512 MB** is plenty: the app is a small FastAPI process plus the
+  static SPA bundle.
+* Every push to `main` triggers a new deploy (`autoDeployTrigger: commit`).
+
+If you would rather trade the sleep for a monthly cost, change `plan: free`
+to `plan: 1c-2g` in `render.yaml` and push — nothing else changes.
+
+## Resetting the demo accounts
+
+To put both pre-loaded accounts back to a clean slate (0 XP, level 1) without
+touching anything else:
+
+```bash
+cd backend
+python -m app.db.reset_accounts_xp --dry-run   # show what would change
+python -m app.db.reset_accounts_xp             # apply
+python -m app.db.reset_accounts_xp --verify    # confirm
+```
+
+It changes exactly two columns on the two seeded accounts (`lifetime_xp` and
+`level`). Accounts, usernames, emails, password hashes, profiles, routines,
+submissions and the XP ledger are left untouched.
+
 
 ## What the blueprint configures
 
